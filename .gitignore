@@ -5,6 +5,7 @@ src/gfx/*.c
 src/gfx/*.h
 src/gfx/*.*~
 src/gfx/*.png
+src/gfx/*.zip
 toolchain.zip
 toolchain/
 .temp/

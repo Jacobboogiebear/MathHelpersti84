@@ -1,4 +1,5 @@
 param([String]$type = "Full")
+$version = "0.0.1"
 
 function Setup-Toolchain {
     if (!(Test-Path -LiteralPath "./toolchain/" -PathType Container)) {
@@ -19,12 +20,13 @@ function Extract-Images {
     $gfx_path = "./src/gfx/"
     $image_files = New-Object System.Collections.ArrayList
     Get-ChildItem -Path "$gfx_path" -Recurse -Include "*.kra" | Where-Object {
+        Copy-Item -LiteralPath "./src/gfx/$($_.BaseName).kra" -Destination "./src/gfx/$($_.BaseName).zip"
         $image_files.Add($_.BaseName)
     }
     foreach ($item_name in $image_files) {
         $item = "./src/gfx/$item_name.png"
         if (!(Test-Path $item -PathType Leaf)) {
-            $file = $item.Replace("png", "kra")
+            $file = $item.Replace("png", "zip")
             Expand-Archive -LiteralPath "$file" -DestinationPath "./.temp" -Force
             Move-Item -LiteralPath "./.temp/mergedimage.png" -Destination "$item"
             Remove-Item -LiteralPath "./.temp/" -Force -Recurse
@@ -65,6 +67,14 @@ function Cleanup {
         $item = "./src/gfx/$item_name.png"
         Remove-Item -LiteralPath "$item"
     }
+    $zip_files = New-Object System.Collections.ArrayList
+    Get-ChildItem -Path "$gfx_path" -Recurse -Include "*.zip" | Where-Object {
+        $zip_files.Add($_.BaseName)
+    }
+    foreach ($item_name in $zip_files) {
+        $item = "./src/gfx/$item_name.zip"
+        Remove-Item -LiteralPath "$item"
+    }
     if (Test-Path -LiteralPath "./toolchain") {
         Remove-Item -LiteralPath "./toolchain" -Force -Recurse
     }
@@ -100,5 +110,22 @@ elseif ($type -eq "binary") {
     Copy-Output
 }
 elseif ($type -eq "clean") {
+    Setup-Path
     Cleanup
+}
+elseif ($type -eq "ps2exe") {
+    if ($MyInvocation.MyCommand.Name -match ".ps1$")
+    {
+        Install-Module ps2exe -Force
+        Invoke-PS2EXE "./$($MyInvocation.MyCommand.Name)" "./$($MyInvocation.MyCommand.Name.Replace(".ps1", ".exe"))"
+    } else
+    {
+        Write-Host "This functionality only works directly from the powershell script!"
+    }
+}
+elseif ($type -eq "version") {
+    Write-Host "Version is $version"
+}
+else {
+    Write-Host "No valid function passed"
 }
