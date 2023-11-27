@@ -1,0 +1,11 @@
+bin/
+obj/
+src/gfx/convimg.yaml.lst
+src/gfx/*.c
+src/gfx/*.h
+src/gfx/*.*~
+src/gfx/*.png
+toolchain.zip
+toolchain/
+.temp/
+*.8xp

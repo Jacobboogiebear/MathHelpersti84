@@ -1,0 +1,15 @@
+{
+    "C_Cpp.default.includePath": [
+        ".\\toolchain\\CEdev\\include"
+    ],
+    "C_Cpp.default.intelliSenseMode": "",
+    "C_Cpp.default.systemIncludePath": [
+        ".\\toolchain\\CEdev\\include"
+    ],
+    "files.associations": {
+        "getcsc.h": "c",
+        "gfx.h": "c",
+        "graphx.h": "c",
+        "global_palette.h": "c"
+    }
+}
