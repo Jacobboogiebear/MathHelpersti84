@@ -1,5 +1,5 @@
 param([String]$type = "Full")
-$version = "0.0.1"
+$version = "0.0.2"
 
 function Setup-Toolchain {
     if (!(Test-Path -LiteralPath "./toolchain/" -PathType Container)) {
@@ -31,6 +31,14 @@ function Extract-Images {
             Move-Item -LiteralPath "./.temp/mergedimage.png" -Destination "$item"
             Remove-Item -LiteralPath "./.temp/" -Force -Recurse
         }
+    }
+    $zip_files = New-Object System.Collections.ArrayList
+    Get-ChildItem -Path "$gfx_path" -Recurse -Include "*.zip" | Where-Object {
+        $zip_files.Add($_.BaseName)
+    }
+    foreach ($item_name in $zip_files) {
+        $item = "./src/gfx/$item_name.zip"
+        Remove-Item -LiteralPath "$item"
     }
 }
 function Compile-GFX {
@@ -75,6 +83,31 @@ function Cleanup {
         $item = "./src/gfx/$item_name.zip"
         Remove-Item -LiteralPath "$item"
     }
+    $misc_1_files = New-Object System.Collections.ArrayList
+    Get-ChildItem -Path "$gfx_path" -Recurse -Include "*.png~" | Where-Object {
+        $misc_1_files.Add($_.BaseName)
+    }
+    foreach ($item_name in $misc_1_files) {
+        $item = "./src/gfx/$item_name.png~"
+        Remove-Item -Path "$item"
+    }
+    $misc_2_files = New-Object System.Collections.ArrayList
+    Get-ChildItem -Path "$gfx_path" -Recurse -Include "*.kra~" | Where-Object {
+        $misc_2_files.Add($_.BaseName)
+    }
+    foreach ($item_name in $misc_2_files) {
+        $item = "./src/gfx/$item_name.kra~"
+        Remove-Item -Path "$item"
+    }
+    $font_path = "./src/fonts/"
+    $font_files = New-Object System.Collections.ArrayList
+    Get-ChildItem -Path "$font_path" -Recurse -Include "*.inc" | Where-Object {
+        $font_files.Add($_.BaseName)
+    }
+    foreach ($item_name in $font_files) {
+        $item = "./src/fonts/$item_name.inc"
+        Remove-Item -LiteralPath "$item"
+    }
     if (Test-Path -LiteralPath "./toolchain") {
         Remove-Item -LiteralPath "./toolchain" -Force -Recurse
     }
@@ -86,21 +119,30 @@ function Cleanup {
     
     Remove-Item -Path "./src/gfx/*.c" -Force   
 }
+function Compile-Font {
+    convfont -o carray -f ./src/fonts/gameplayfont.fnt ./src/fonts/gameplayfont.inc
+}
 
 if (($type -eq "Full") -or ($type -eq "compile")) {
     Setup-Toolchain
     Setup-Path
     Extract-Images
+    Compile-Font
     Compile-GFX
     Clean-Directory
     Compile-Binary
     Copy-Output
 }
-elseif ($type -eq "gfx") {
+elseif (($type -eq "gfx") -or ($type -eq "setup")) {
     Setup-Toolchain
     Setup-Path
     Extract-Images
     Compile-GFX
+}
+elseif ($type -eq "font") {
+    Setup-Toolchain
+    Setup-Path
+    Compile-Font
 }
 elseif ($type -eq "binary") {
     Setup-Toolchain
@@ -112,16 +154,6 @@ elseif ($type -eq "binary") {
 elseif ($type -eq "clean") {
     Setup-Path
     Cleanup
-}
-elseif ($type -eq "ps2exe") {
-    if ($MyInvocation.MyCommand.Name -match ".ps1$")
-    {
-        Install-Module ps2exe -Force
-        Invoke-PS2EXE "./$($MyInvocation.MyCommand.Name)" "./$($MyInvocation.MyCommand.Name.Replace(".ps1", ".exe"))"
-    } else
-    {
-        Write-Host "This functionality only works directly from the powershell script!"
-    }
 }
 elseif ($type -eq "version") {
     Write-Host "Version is $version"

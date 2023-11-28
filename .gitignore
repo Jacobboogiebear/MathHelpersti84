@@ -6,7 +6,9 @@ src/gfx/*.h
 src/gfx/*.*~
 src/gfx/*.png
 src/gfx/*.zip
+src/fonts/*.inc
 toolchain.zip
 toolchain/
 .temp/
 *.8xp
+clibs.8xg
